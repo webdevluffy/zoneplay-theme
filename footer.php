@@ -15,7 +15,8 @@ $zp_facebook  = 'https://www.facebook.com/zoneplaycardiff';
 $zp_instagram = 'https://www.instagram.com/zoneplaycardiff/';
 
 $zp_hours = array(
-	array( 'day' => 'Monday – Saturday', 'hours' => '10am – 4pm', 'closed' => false ),
+	array( 'day' => 'Monday', 'hours' => 'Closed', 'closed' => true ),
+	array( 'day' => 'Tuesday – Saturday', 'hours' => '10am – 5:30pm', 'closed' => false ),
 	array( 'day' => 'Sunday', 'hours' => '11am – 4pm', 'closed' => false ),
 );
 ?>
