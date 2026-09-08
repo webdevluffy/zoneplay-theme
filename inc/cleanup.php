@@ -152,5 +152,12 @@ add_action(
 // No XML-RPC surface.
 add_filter( 'xmlrpc_enabled', '__return_false' );
 
+// Disable wptexturize. Page bodies are authored as raw HTML in the Editable
+// HTML Block, mirroring astro-build-site character-for-character (straight
+// quotes/apostrophes, literal -- and ...). Texturize would silently swap in
+// curly quotes / en–em dashes / ellipses and break that parity. The theme's
+// header/footer are hardcoded PHP and never ran through it anyway.
+add_filter( 'run_wptexturize', '__return_false' );
+
 // Keep the REST API for logged-in editors (block editor needs it) but drop
 // the public link header noise handled above. Nothing else to do here.
