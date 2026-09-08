@@ -18,7 +18,22 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { compile } from 'tailwindcss';
 import { Scanner } from '@tailwindcss/oxide';
-import { transform as lightning } from 'lightningcss';
+import { transform as lightning, Features } from 'lightningcss';
+
+// Mirror @tailwindcss/vite's own Lightning CSS pass (@tailwindcss/node's
+// optimize()): force media-query + nesting lowering — regardless of the
+// targets below — and use the same browser floor. Without `include`,
+// Lightning leaves Tailwind v4's `@media (width >= 64rem)` range syntax
+// as-is; @tailwindcss/vite lowers it to `@media (min-width: 64rem)`, and
+// the Editable HTML Block plugin's compiler now does too, so the theme's
+// main.css must match to keep one media-query style across the site.
+const LIGHTNING_INCLUDE = Features.MediaQueries | Features.Nesting;
+const LIGHTNING_TARGETS = {
+  safari: (16 << 16) | (4 << 8), // 16.4
+  ios_saf: (16 << 16) | (4 << 8), // 16.4
+  firefox: 128 << 16,
+  chrome: 111 << 16,
+};
 
 const require = createRequire(import.meta.url);
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -59,6 +74,8 @@ async function build() {
     filename: 'main.css',
     code: Buffer.from(raw),
     minify: true,
+    include: LIGHTNING_INCLUDE,
+    targets: LIGHTNING_TARGETS,
   });
 
   fs.writeFileSync(outFile, code);
