@@ -1,0 +1,16 @@
+{
+  "name": "zoneplay-theme-css",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Dev-only Tailwind build for ../assets/css/main.css. Not needed to run the theme — main.css is committed.",
+  "scripts": {
+    "build": "node build-css.mjs",
+    "watch": "node build-css.mjs --watch"
+  },
+  "dependencies": {
+    "@tailwindcss/oxide": "4.3.0",
+    "tailwindcss": "4.3.0",
+    "lightningcss": "1.32.0"
+  }
+}

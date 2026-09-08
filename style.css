@@ -1,0 +1,18 @@
+/*
+Theme Name: Zone Play Cardiff
+Theme URI: https://zoneplaycardiff.co.uk/
+Author: Zone Play Cardiff
+Description: Custom Tailwind CSS theme for Zone Play Cardiff, converted from the Astro build. Page content is authored with the Editable HTML Block plugin; the theme provides the head, header, footer and template chrome. Loads only the assets it uses.
+Version: 1.0.0
+Requires at least: 6.5
+Tested up to: 6.9
+Requires PHP: 7.4
+License: GPL-2.0-or-later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: zoneplay
+Tags: custom-menu, featured-images, threaded-comments, translation-ready
+
+The compiled Tailwind CSS lives in assets/css/main.css (built from
+assets/css/src.css by tools/build-css.mjs). This file only carries the
+WordPress theme header.
+*/

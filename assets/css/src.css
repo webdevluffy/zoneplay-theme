@@ -1,0 +1,55 @@
+/*
+ * Tailwind source for the Zone Play Cardiff theme.
+ *
+ * Mirrors astro-build-site/src/styles/global.css. Compiled to main.css by
+ * tools/build-css.mjs (npm run build in tools/), which scans the theme's
+ * own *.php / assets/js/*.js for the utility classes it actually uses — so
+ * main.css only carries what the header, footer and template chrome need.
+ *
+ * Page content is authored with the Editable HTML Block plugin, which
+ * compiles its own per-post Tailwind (stored in _ehb_tw_css) — the theme
+ * never scans post content.
+ */
+
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fredoka", ui-sans-serif, system-ui, sans-serif;
+
+  --color-zp-blue: #0082c8;
+  --color-zp-green: #7ac142;
+  --color-zp-yellow: #fdbd00;
+  --color-zp-red: #e12128;
+  --color-zp-pink: #e91e63;
+  --color-zp-orange: #f98711;
+  --color-zp-darkblue: #0e355d;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
+}
+
+body {
+  @apply text-slate-800 bg-slate-50 font-sans antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply font-display tracking-wide;
+}
+
+::selection {
+  background-color: var(--color-zp-yellow);
+  color: var(--color-zp-darkblue);
+}
+
+/* Respect reduced-motion preferences for all decorative animation. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
