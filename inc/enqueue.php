@@ -6,6 +6,11 @@
  *   zoneplay-style   assets/css/main.css      compiled Tailwind for the header / footer / templates.
  *   zoneplay-nav     assets/js/navigation.js  mobile menu toggle (defer).
  *
+ * Block editor canvas (enqueue_block_assets, admin only):
+ *   zoneplay-fonts        the same @font-face file — makes the faces available.
+ *   zoneplay-editor       assets/css/editor.css — canvas typography, so plain
+ *                         blocks aren't left on Gutenberg's `serif` reset.
+ *
  * @package ZonePlay
  */
 
@@ -45,6 +50,36 @@ add_action(
 			array(),
 			zp_asset_ver( 'assets/js/navigation.js' ),
 			array( 'strategy' => 'defer', 'in_footer' => true )
+		);
+	}
+);
+
+/**
+ * Block editor canvas — load the @font-face file and the canvas typography
+ * so plain blocks don't fall through to Gutenberg's `serif` reset in
+ * wp-includes/css/dist/block-library/reset.min.css. enqueue_block_assets
+ * loads into the WP 6.3+ editor-canvas iframe; the is_admin() guard keeps
+ * it out of the front end (already covered by main.css there).
+ */
+add_action(
+	'enqueue_block_assets',
+	function () {
+		if ( ! is_admin() ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'zoneplay-fonts',
+			ZP_THEME_URI . '/assets/fonts.css',
+			array(),
+			zp_asset_ver( 'assets/fonts.css' )
+		);
+
+		wp_enqueue_style(
+			'zoneplay-editor',
+			ZP_THEME_URI . '/assets/css/editor.css',
+			array( 'zoneplay-fonts' ),
+			zp_asset_ver( 'assets/css/editor.css' )
 		);
 	}
 );

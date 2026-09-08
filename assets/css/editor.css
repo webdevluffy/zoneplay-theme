@@ -1,0 +1,22 @@
+/*
+ * Block editor canvas typography.
+ *
+ * wp-includes/css/dist/block-library/reset.min.css resets the canvas to
+ * `font-family: serif` (via a zero-specificity :where() so themes can
+ * override it). Match the front end. `@font-face` for the two families is
+ * loaded into the canvas separately (assets/fonts.css, via
+ * enqueue_block_assets).
+ *
+ * Page content is authored with the Editable HTML Block plugin, which
+ * injects its own scoped Tailwind — this only covers plain blocks.
+ */
+
+.editor-styles-wrapper {
+	font-family: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	color: #1e293b;          /* slate-800 */
+}
+
+.editor-styles-wrapper :is(h1, h2, h3, h4, h5, h6) {
+	font-family: "Fredoka", ui-sans-serif, system-ui, sans-serif;
+	letter-spacing: 0.025em; /* tracking-wide */
+}
