@@ -2,9 +2,8 @@
 /**
  * Site footer — brand blurb, opening times, contact, legal row.
  *
- * Static for now (mirrors the Astro build). The opening-times list keeps
- * the `js-opening-hours` hooks so assets/js/opening-hours.js can still
- * hydrate it from /data/opening-hours.json when that file exists.
+ * Static for now (mirrors the Astro build); a widgets pass comes later.
+ * Opening times are the $zp_hours array below.
  *
  * @package ZonePlay
  */
@@ -46,11 +45,11 @@ $zp_hours = array(
 
 			<div>
 				<h2 class="font-display font-bold text-xl mb-6 text-zp-yellow">Opening Times</h2>
-				<ul class="space-y-1 mb-4 js-opening-hours" data-color-open="#ffffff" data-color-closed="#f87171">
+				<ul class="space-y-1 mb-4">
 					<?php foreach ( $zp_hours as $i => $row ) : ?>
-						<li class="py-2.5 border-b border-white/10 last:border-0" data-row="<?php echo (int) $i; ?>">
-							<span class="block text-blue-200 font-medium text-sm" data-field="day"><?php echo esc_html( $row['day'] ); ?></span>
-							<span class="font-bold text-base <?php echo $row['closed'] ? 'text-red-400' : 'text-white'; ?>" data-field="hours"><?php echo esc_html( $row['hours'] ); ?></span>
+						<li class="py-2.5 border-b border-white/10 last:border-0">
+							<span class="block text-blue-200 font-medium text-sm"><?php echo esc_html( $row['day'] ); ?></span>
+							<span class="font-bold text-base <?php echo $row['closed'] ? 'text-red-400' : 'text-white'; ?>"><?php echo esc_html( $row['hours'] ); ?></span>
 						</li>
 					<?php endforeach; ?>
 				</ul>

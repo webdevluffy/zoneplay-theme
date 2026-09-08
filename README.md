@@ -13,14 +13,14 @@ style.css              Theme header only
 functions.php           Loads inc/*
 header.php / footer.php  Static nav + footer (Astro parity). Menus come later.
 index.php page.php single.php archive.php search.php 404.php
-searchform.php comments.php
+searchform.php
 inc/setup.php           Theme supports, menu locations, content width
-inc/enqueue.php         Fonts + main.css + navigation.js + opening-hours.js
+inc/enqueue.php         Fonts + main.css + navigation.js
 inc/cleanup.php         Strips unused WP defaults (emoji, block-library CSS, …)
 assets/css/src.css      Tailwind source (mirrors Astro global.css)
 assets/css/main.css     Compiled + minified — committed, no build needed to run
 assets/fonts/           Self-hosted Fredoka + Nunito (no Google Fonts)
-assets/js/              navigation.js (mobile menu), opening-hours.js
+assets/js/              navigation.js (mobile menu)
 assets/images/          logo.webp, favicon.png
 tools/                  Dev-only CSS build (Tailwind + oxide + lightningcss)
 ```

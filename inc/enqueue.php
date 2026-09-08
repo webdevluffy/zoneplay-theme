@@ -2,13 +2,9 @@
 /**
  * Front-end assets — only what the theme actually uses.
  *
- *   zoneplay-fonts   assets/fonts.css   self-hosted Fredoka + Nunito
- *                                             @font-face (no Google Fonts).
- *   zoneplay-style   assets/css/main.css      compiled Tailwind for the
- *                                             header / footer / templates.
+ *   zoneplay-fonts   assets/fonts.css         self-hosted Fredoka + Nunito @font-face (no Google Fonts).
+ *   zoneplay-style   assets/css/main.css      compiled Tailwind for the header / footer / templates.
  *   zoneplay-nav     assets/js/navigation.js  mobile menu toggle (defer).
- *   zoneplay-hours   assets/js/opening-hours  optional hours hydration (defer,
- *                                             self-guards when no list found).
  *
  * @package ZonePlay
  */
@@ -50,18 +46,6 @@ add_action(
 			zp_asset_ver( 'assets/js/navigation.js' ),
 			array( 'strategy' => 'defer', 'in_footer' => true )
 		);
-
-		wp_enqueue_script(
-			'zoneplay-hours',
-			ZP_THEME_URI . '/assets/js/opening-hours.js',
-			array(),
-			zp_asset_ver( 'assets/js/opening-hours.js' ),
-			array( 'strategy' => 'defer', 'in_footer' => true )
-		);
-
-		if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
-			wp_enqueue_script( 'comment-reply' );
-		}
 	}
 );
 

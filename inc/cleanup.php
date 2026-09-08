@@ -116,6 +116,36 @@ add_action(
 );
 
 /* -------------------------------------------------------------------------
+ * Comments — the site doesn't use them
+ * ---------------------------------------------------------------------- */
+add_filter( 'comments_open', '__return_false', 20 );
+add_filter( 'pings_open', '__return_false', 20 );
+add_filter( 'comments_array', '__return_empty_array', 20 );
+
+add_action(
+	'init',
+	function () {
+		// Drop the per-post comment-feed <link> and the admin-bar Comments node.
+		remove_action( 'wp_head', 'feed_links_extra', 3 );
+	}
+);
+
+add_action(
+	'wp_before_admin_bar_render',
+	function () {
+		global $wp_admin_bar;
+		$wp_admin_bar->remove_node( 'comments' );
+	}
+);
+
+add_action(
+	'admin_menu',
+	function () {
+		remove_menu_page( 'edit-comments.php' );
+	}
+);
+
+/* -------------------------------------------------------------------------
  * Misc
  * ---------------------------------------------------------------------- */
 
