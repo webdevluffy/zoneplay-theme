@@ -1,0 +1,261 @@
+/*
+ * [zoneplay_contact_form] — self-contained styles.
+ *
+ * Reproduces the look of the marketing site's contact form (rounded
+ * border-4 inputs, orange accent, pill submit with a hard drop-shadow)
+ * with its own `zpcf-*` classes instead of Tailwind utilities, so the
+ * shortcode carries no dependency on a compiled utility sheet. Scoped
+ * under `.zpcf`. Accent colours / fonts mirror the theme tokens.
+ */
+
+.zpcf {
+	--zpcf-orange: #f98711;
+	--zpcf-orange-hover: #d46d00;
+	--zpcf-orange-shadow: #a85500;
+	--zpcf-green: #7ac142;
+	--zpcf-red: #e12128;
+	--zpcf-darkblue: #0e355d;
+	--zpcf-slate-200: #e2e8f0;
+	--zpcf-slate-400: #94a3b8;
+	--zpcf-slate-600: #475569;
+	--zpcf-slate-700: #334155;
+
+	--zpcf-font-body: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	--zpcf-font-display: "Fredoka", var(--zpcf-font-body);
+
+	font-family: var(--zpcf-font-body);
+	color: var(--zpcf-slate-700);
+	font-size: 16px;
+	line-height: 1.5;
+}
+
+.zpcf *,
+.zpcf *::before,
+.zpcf *::after {
+	box-sizing: border-box;
+}
+
+/* Form layout ---------------------------------------------------------- */
+
+.zpcf__form {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem; /* space-y-6 */
+}
+
+.zpcf__row {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+	.zpcf__row {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+.zpcf__field {
+	display: block;
+}
+
+.zpcf__field label {
+	display: block;
+	margin: 0 0 0.5rem;
+	font-weight: 700;
+	font-size: 1rem;
+	color: var(--zpcf-slate-700);
+}
+
+.zpcf__req {
+	color: var(--zpcf-orange);
+}
+
+.zpcf__opt {
+	color: var(--zpcf-slate-400);
+	font-weight: 500;
+	font-size: 0.875rem;
+}
+
+/* Fields ------------------------------------------------------------- */
+
+.zpcf__field input,
+.zpcf__field textarea,
+.zpcf__field select {
+	width: 100%;
+	padding: 0.875rem 1.25rem; /* py-3.5 px-5 */
+	border: 4px solid var(--zpcf-slate-200);
+	border-radius: 0.75rem; /* rounded-xl */
+	background-color: #fff;
+	font-family: inherit;
+	font-size: 1rem;
+	font-weight: 500;
+	color: var(--zpcf-slate-700);
+	line-height: 1.5;
+	transition: border-color 0.15s ease;
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+.zpcf__field textarea {
+	resize: vertical;
+	min-height: 9.5rem;
+}
+
+.zpcf__field select {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 1.1rem center;
+	padding-right: 3rem;
+}
+
+.zpcf__field input:focus,
+.zpcf__field textarea:focus,
+.zpcf__field select:focus {
+	outline: none;
+	border-color: var(--zpcf-orange);
+}
+
+/* Native validation: flag a field red only once the user has engaged with
+ * it (or tried to submit) — never on a fresh page load. :focus still wins. */
+.zpcf__field input:user-invalid:not(:focus),
+.zpcf__field textarea:user-invalid:not(:focus),
+.zpcf__field select:user-invalid:not(:focus) {
+	border-color: rgba( 225, 33, 40, 0.6 );
+}
+
+.zpcf__field input::placeholder,
+.zpcf__field textarea::placeholder {
+	color: var(--zpcf-slate-400);
+}
+
+/* Honeypot — off-screen, NOT display:none (bots skip hidden fields). */
+.zpcf__hp {
+	position: absolute;
+	left: -9999px;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+}
+
+/* Error line -------------------------------------------------------- */
+
+.zpcf__error {
+	margin: 0;
+	padding: 0.75rem 1.25rem;
+	border: 2px solid rgba(225, 33, 40, 0.4);
+	border-radius: 0.75rem;
+	background-color: rgba(225, 33, 40, 0.1);
+	color: var(--zpcf-red);
+	font-weight: 700;
+	font-size: 1rem;
+}
+
+.zpcf__error[hidden] {
+	display: none;
+}
+
+/* Submit ---------------------------------------------------------- */
+
+.zpcf__submit {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	padding: 1rem 2.5rem; /* py-4 px-10 */
+	border: 0;
+	border-radius: 9999px;
+	background-color: var(--zpcf-orange);
+	color: #fff;
+	font-family: var(--zpcf-font-display);
+	font-weight: 700;
+	font-size: 1.25rem; /* text-xl */
+	line-height: 1;
+	cursor: pointer;
+	box-shadow: 0 6px 0 0 var(--zpcf-orange-shadow);
+	transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+@media (min-width: 640px) {
+	.zpcf__submit {
+		width: auto;
+	}
+}
+
+.zpcf__submit:hover {
+	background-color: var(--zpcf-orange-hover);
+	box-shadow: 0 2px 0 0 var(--zpcf-orange-shadow);
+	transform: translateY(4px);
+}
+
+.zpcf__submit:active {
+	box-shadow: none;
+	transform: translateY(6px);
+}
+
+.zpcf__submit:disabled {
+	opacity: 0.7;
+	cursor: not-allowed;
+	box-shadow: 0 6px 0 0 var(--zpcf-orange-shadow);
+	transform: none;
+}
+
+.zpcf__submit-icon {
+	margin-right: 0.75rem;
+	width: 1.25rem;
+	height: 1.25rem;
+	flex-shrink: 0;
+}
+
+/* Success panel ------------------------------------------------- */
+
+.zpcf__success {
+	padding: 2rem;
+	border: 4px solid rgba(122, 193, 66, 0.4);
+	border-radius: 1rem;
+	background-color: rgba(122, 193, 66, 0.1);
+	text-align: center;
+}
+
+.zpcf__success[hidden] {
+	display: none;
+}
+
+.zpcf__success-icon {
+	display: block;
+	width: 3.5rem;
+	height: 3.5rem;
+	margin: 0 auto 1rem;
+	color: var(--zpcf-green);
+}
+
+.zpcf__success-title {
+	margin: 0 0 0.5rem;
+	font-family: var(--zpcf-font-display);
+	font-weight: 700;
+	font-size: 1.5rem;
+	color: var(--zpcf-darkblue);
+}
+
+.zpcf__success-text {
+	margin: 0;
+	font-weight: 500;
+	font-size: 1.125rem;
+	color: var(--zpcf-slate-600);
+}
+
+.zpcf__reset {
+	margin-top: 1.5rem;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--zpcf-orange);
+	font-family: inherit;
+	font-weight: 700;
+	font-size: 1rem;
+	cursor: pointer;
+}
+
+.zpcf__reset:hover {
+	text-decoration: underline;
+}

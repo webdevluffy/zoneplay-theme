@@ -16,3 +16,6 @@ define( 'ZP_THEME_URI', get_template_directory_uri() );
 require_once ZP_THEME_DIR . '/inc/setup.php';
 require_once ZP_THEME_DIR . '/inc/enqueue.php';
 require_once ZP_THEME_DIR . '/inc/cleanup.php';
+
+// Standalone feature — the [zoneplay_contact_form] shortcode (not theme chrome).
+require_once ZP_THEME_DIR . '/inc/contact-form.php';
