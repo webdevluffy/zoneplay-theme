@@ -38,6 +38,15 @@ function zp_nav_is_active( $href, $req ) {
 <html <?php language_attributes(); ?>>
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>" />
+	<?php if ( zp_load_gtm() ) : ?>
+	<!-- Google Tag Manager -->
+	<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+	new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+	j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+	'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+	})(window,document,'script','dataLayer','<?php echo esc_js( ZP_GTM_ID ); ?>');</script>
+	<!-- End Google Tag Manager -->
+	<?php endif; ?>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<meta name="theme-color" content="#0e355d" />
 	<link rel="profile" href="https://gmpg.org/xfn/11" />
@@ -46,6 +55,12 @@ function zp_nav_is_active( $href, $req ) {
 
 <body <?php body_class( 'min-h-screen flex flex-col bg-slate-50 overflow-x-hidden' ); ?>>
 <?php wp_body_open(); ?>
+<?php if ( zp_load_gtm() ) : ?>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=<?php echo esc_attr( ZP_GTM_ID ); ?>"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<?php endif; ?>
 
 <a class="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-2 focus:left-2 focus:bg-white focus:text-zp-darkblue focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg" href="#main">
 	<?php esc_html_e( 'Skip to content', 'zoneplay' ); ?>

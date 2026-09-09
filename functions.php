@@ -16,6 +16,7 @@ define( 'ZP_THEME_URI', get_template_directory_uri() );
 require_once ZP_THEME_DIR . '/inc/setup.php';
 require_once ZP_THEME_DIR . '/inc/enqueue.php';
 require_once ZP_THEME_DIR . '/inc/cleanup.php';
+require_once ZP_THEME_DIR . '/inc/analytics.php';
 
 // WooCommerce Checkout / Cart / My Account skin (front-end CSS only).
 if ( class_exists( 'WooCommerce' ) ) {
