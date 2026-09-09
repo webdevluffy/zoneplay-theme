@@ -858,6 +858,14 @@ body.woocommerce-page #main .wc-block-components-checkout-place-order-button .wc
 	fill: var(--zp-darkblue);
 }
 
+/* Guest-checkout notice + "create an account" toggle spacing / weight. */
+body.woocommerce-page #main .wp-block-woocommerce-checkout .wc-block-checkout__guest-checkout-notice {
+	margin-top: 1.5rem !important;
+}
+body.woocommerce-page #main .wp-block-woocommerce-checkout .wc-block-checkout__create-account {
+	font-weight: 700;
+}
+
 /* order-received / thank-you summary strip */
 body.woocommerce-page .woocommerce ul.order_details {
 	display: flex;
