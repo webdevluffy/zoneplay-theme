@@ -48,6 +48,38 @@
 }
 
 /* -------------------------------------------------------------------------
+ * Keep Stripe's payment iframe light.
+ *
+ * Stripe's payment Element is a cross-origin iframe we can't style. To theme
+ * it, WooCommerce Stripe samples the *computed* `background-color` of the
+ * first checkout element it finds (payment fieldset, form, .wc-block-checkout,
+ * main, then body) and feeds it to Stripe's appearance API.
+ *
+ * The theme's Tailwind v4 build sets those backgrounds with `oklch()`.
+ * WooCommerce Stripe's bundled colour library (an old tinycolor) can't parse
+ * `oklch()`, treats the value as invalid, and falls back to Stripe's dark
+ * "night" theme — hence the black "Card" accordion.
+ *
+ * Fix: re-declare the sampled backgrounds in plain sRGB so the sampler gets
+ * a valid, light colour. `#payment-method` is the first one it actually hits
+ * (the elements above it are transparent); `body` is the final fallback.
+ * `color-scheme: light` is kept so native controls stay light too.
+ * ---------------------------------------------------------------------- */
+:root {
+	color-scheme: light;
+}
+body.woocommerce-page {
+	color-scheme: light;
+	background-color: #f8fafc; /* slate-50, sRGB — was oklch() from Tailwind */
+}
+body.woocommerce-page #main #payment-method {
+	background-color: #ffffff;
+	border: 1px solid var(--zp-border);
+	border-radius: var(--zp-radius);
+	padding: 1.25rem 1.5rem;
+}
+
+/* -------------------------------------------------------------------------
  * Header / footer logos.
  *
  * WooCommerce's woocommerce-layout.css (loaded on these screens) ships
