@@ -57,6 +57,25 @@ add_action(
 );
 
 /**
+ * Reword the login heading on the logged-out My Account screen.
+ *
+ * WooCommerce's myaccount/form-login.php outputs just "Login" as its <h2>.
+ * Filtering the WooCommerce text domain (rather than overriding the whole
+ * template) keeps this to the single string.
+ */
+add_filter(
+	'gettext_woocommerce',
+	function ( $translation, $text ) {
+		if ( 'Login' === $text && function_exists( 'is_account_page' ) && is_account_page() && ! is_user_logged_in() ) {
+			return __( 'Log in to your account', 'zoneplay' );
+		}
+		return $translation;
+	},
+	10,
+	2
+);
+
+/**
  * Register the checkout / account stylesheet and enqueue it only on the
  * WooCommerce Checkout, Cart and My Account screens.
  *
