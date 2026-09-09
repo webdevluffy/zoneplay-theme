@@ -17,5 +17,10 @@ require_once ZP_THEME_DIR . '/inc/setup.php';
 require_once ZP_THEME_DIR . '/inc/enqueue.php';
 require_once ZP_THEME_DIR . '/inc/cleanup.php';
 
+// WooCommerce Checkout / Cart / My Account skin (front-end CSS only).
+if ( class_exists( 'WooCommerce' ) ) {
+	require_once ZP_THEME_DIR . '/inc/woocommerce.php';
+}
+
 // Standalone feature — the [zoneplay_contact_form] shortcode (not theme chrome).
 require_once ZP_THEME_DIR . '/inc/contact-form.php';

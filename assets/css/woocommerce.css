@@ -1,0 +1,629 @@
+/*
+ * WooCommerce Checkout, Cart & My Account — ZonePlay skin.
+ *
+ * These screens are plain Pages (the [woocommerce_checkout] /
+ * [woocommerce_cart] / [woocommerce_my_account] shortcodes) rendered through
+ * page.php, so they inherit the site-wide Tailwind Preflight reset from
+ * assets/css/main.css — which strips buttons, borders, list markers and
+ * heading styles — but none of the theme's component styling. On top of that
+ * sits only WooCommerce's own generic CSS, so out of the box they look
+ * nothing like the rest of the site.
+ *
+ * inc/woocommerce.php enqueues this sheet ONLY on is_checkout() / is_cart() /
+ * is_account_page(), after `zoneplay-style` and WooCommerce's stylesheets, so
+ * it wins the cascade. It re-skins those screens with the theme's fonts,
+ * colours, rounded border-2 inputs and pill buttons with a hard drop-shadow
+ * (the same look as the header "Book Soft Play" CTA and the
+ * [zoneplay_contact_form] shortcode).
+ *
+ * Everything is scoped under `.woocommerce-page` — a body class WooCommerce
+ * adds to every one of these screens — so nothing here leaks to other pages.
+ */
+
+/* -------------------------------------------------------------------------
+ * Tokens — mirror the theme's Tailwind @theme colours (assets/css/src.css).
+ * ---------------------------------------------------------------------- */
+.woocommerce-page {
+	--zp-blue: #0082c8;
+	--zp-green: #7ac142;
+	--zp-yellow: #fdbd00;
+	--zp-red: #e12128;
+	--zp-orange: #f98711;
+	--zp-darkblue: #0e355d;
+
+	--zp-ink: #1e293b;        /* slate-800 */
+	--zp-muted: #475569;      /* slate-600 */
+	--zp-faint: #94a3b8;      /* slate-400 */
+	--zp-border: #e2e8f0;     /* slate-200 */
+	--zp-bg: #f8fafc;         /* slate-50  */
+	--zp-card: #ffffff;
+
+	--zp-radius: 1rem;
+	--zp-radius-sm: 0.75rem;
+	--zp-shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
+	--zp-btn-shadow: #d97706; /* amber-600, matches the theme CTA */
+
+	--zp-font-body: "Nunito", ui-sans-serif, system-ui, sans-serif;
+	--zp-font-display: "Fredoka", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* -------------------------------------------------------------------------
+ * Header / footer logos.
+ *
+ * WooCommerce's woocommerce-layout.css (loaded on these screens) ships
+ * `.woocommerce-page img { height: auto }`. That selector (class + element)
+ * outranks the bare `h-24` / `md:h-28` / `h-20` utility classes on the
+ * theme's header and footer logos, so on WooCommerce pages they render at
+ * their intrinsic size — bigger than everywhere else. Re-assert the theme
+ * sizing with matching specificity. Each of <header>/<footer> holds exactly
+ * one <img> (the logo; the icons are inline <svg>).
+ * ---------------------------------------------------------------------- */
+body.woocommerce-page header img {
+	height: 6rem; /* h-24 */
+	width: auto;
+}
+@media (min-width: 768px) {
+	body.woocommerce-page header img {
+		height: 7rem; /* md:h-28 */
+	}
+}
+body.woocommerce-page footer img {
+	height: 5rem; /* h-20 */
+	width: auto;
+}
+
+/* -------------------------------------------------------------------------
+ * Page shell — a centred column that clears the fixed header.
+ *
+ * page.php drops the shortcode output straight into <main id="main"> with no
+ * wrapper and no top spacing (normal pages get that from their Editable HTML
+ * Block sections), so the checkout would otherwise sit under the fixed nav.
+ * ---------------------------------------------------------------------- */
+body.woocommerce-page #main {
+	max-width: 70rem;
+	margin-inline: auto;
+	padding: clamp(7rem, 6rem + 5vw, 9.5rem) 1rem 4.5rem;
+	color: var(--zp-ink);
+	font-family: var(--zp-font-body);
+	font-size: 1rem;
+	line-height: 1.6;
+}
+
+/* My Account sits between the header and footer with no hero section of its
+ * own, so give it extra breathing room top and bottom. */
+body.woocommerce-account #main {
+	padding-top: clamp(8rem, 6.75rem + 5vw, 10.5rem);
+	padding-bottom: clamp(4.5rem, 3.75rem + 3vw, 6rem);
+}
+
+body.woocommerce-page #main,
+body.woocommerce-page #main input,
+body.woocommerce-page #main select,
+body.woocommerce-page #main textarea,
+body.woocommerce-page #main button {
+	font-family: var(--zp-font-body);
+}
+
+/* -------------------------------------------------------------------------
+ * Typography — restore what Preflight flattened.
+ * ---------------------------------------------------------------------- */
+body.woocommerce-page #main h1,
+body.woocommerce-page #main h2,
+body.woocommerce-page #main h3,
+body.woocommerce-page #main h4,
+body.woocommerce-page #main legend,
+body.woocommerce-page #main #order_review_heading {
+	font-family: var(--zp-font-display);
+	font-weight: 600;
+	letter-spacing: 0.01em;
+	color: var(--zp-darkblue);
+	line-height: 1.25;
+}
+
+body.woocommerce-page #main h1 { font-size: 1.9rem; margin: 0 0 1.25rem; }
+body.woocommerce-page #main h2 { font-size: 1.4rem; margin: 0 0 1rem; }
+body.woocommerce-page #main h3,
+body.woocommerce-page #main #order_review_heading { font-size: 1.15rem; margin: 1.5rem 0 0.9rem; }
+body.woocommerce-page #main p { margin: 0 0 1rem; }
+body.woocommerce-page #main p:last-child { margin-bottom: 0; }
+
+body.woocommerce-page #main a {
+	color: var(--zp-blue);
+	text-decoration: none;
+	font-weight: 700;
+}
+body.woocommerce-page #main a:hover {
+	color: var(--zp-darkblue);
+	text-decoration: underline;
+}
+
+/* -------------------------------------------------------------------------
+ * Form fields — rounded border-2 inputs with a blue focus ring.
+ * ---------------------------------------------------------------------- */
+body.woocommerce-page .woocommerce form .form-row input.input-text,
+body.woocommerce-page .woocommerce form .form-row textarea,
+body.woocommerce-page .woocommerce form .form-row select,
+body.woocommerce-page .woocommerce #order_comments,
+body.woocommerce-page .woocommerce-EditAccountForm input.input-text,
+body.woocommerce-page .woocommerce form.login input.input-text,
+body.woocommerce-page .woocommerce form.register input.input-text,
+body.woocommerce-page .woocommerce form.checkout_coupon input.input-text,
+body.woocommerce-page .woocommerce form.lost_reset_password input.input-text,
+body.woocommerce-page .select2-container--default .select2-selection--single {
+	width: 100%;
+	padding: 0.75rem 1rem;
+	border: 2px solid var(--zp-border);
+	border-radius: var(--zp-radius-sm);
+	background-color: #fff;
+	color: var(--zp-ink);
+	font-size: 1rem;
+	line-height: 1.4;
+	box-shadow: none;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.woocommerce-page .woocommerce form .form-row input.input-text:focus,
+body.woocommerce-page .woocommerce form .form-row textarea:focus,
+body.woocommerce-page .woocommerce form .form-row select:focus,
+body.woocommerce-page .woocommerce #order_comments:focus,
+body.woocommerce-page .woocommerce-EditAccountForm input.input-text:focus,
+body.woocommerce-page .woocommerce form.login input.input-text:focus,
+body.woocommerce-page .woocommerce form.register input.input-text:focus {
+	outline: none;
+	border-color: var(--zp-blue);
+	box-shadow: 0 0 0 4px rgba(0, 130, 200, 0.15);
+}
+
+body.woocommerce-page .woocommerce input[type="checkbox"],
+body.woocommerce-page .woocommerce input[type="radio"] {
+	width: 1.1rem;
+	height: 1.1rem;
+	accent-color: var(--zp-blue);
+	vertical-align: middle;
+}
+
+/* Labels + required / optional markers */
+body.woocommerce-page .woocommerce form .form-row label,
+body.woocommerce-page .woocommerce-EditAccountForm label,
+body.woocommerce-page .woocommerce form.login label,
+body.woocommerce-page .woocommerce form.register label,
+body.woocommerce-page .woocommerce-form-row label {
+	display: inline-block;
+	margin-bottom: 0.4rem;
+	font-weight: 700;
+	color: var(--zp-muted);
+}
+body.woocommerce-page .woocommerce .required,
+body.woocommerce-page .woocommerce abbr.required {
+	color: var(--zp-red);
+	border: 0;
+	text-decoration: none;
+}
+body.woocommerce-page .woocommerce .optional { color: var(--zp-faint); }
+
+body.woocommerce-page #ship-to-different-address label,
+body.woocommerce-page .woocommerce-form-login__rememberme span,
+body.woocommerce-page .woocommerce-form__label-for-checkbox span {
+	font-family: var(--zp-font-display);
+	font-weight: 500;
+	color: var(--zp-ink);
+}
+
+/* select2 (country / state dropdowns) */
+.select2-container--default .select2-selection--single {
+	height: auto;
+	outline: none;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+	padding: 0;
+	line-height: 1.4;
+	color: var(--zp-ink);
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+	top: 50%;
+	right: 0.75rem;
+	transform: translateY(-50%);
+}
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--open .select2-selection--single {
+	border-color: var(--zp-blue);
+	box-shadow: 0 0 0 4px rgba(0, 130, 200, 0.15);
+}
+.select2-dropdown {
+	border: 2px solid var(--zp-blue);
+	border-radius: var(--zp-radius-sm);
+	overflow: hidden;
+}
+.select2-container--default .select2-search--dropdown .select2-search__field {
+	border: 2px solid var(--zp-border);
+	border-radius: 0.5rem;
+	padding: 0.5rem 0.65rem;
+}
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+	background-color: var(--zp-blue);
+}
+
+body.woocommerce-page .woocommerce .woocommerce-password-strength {
+	border-radius: 0.5rem;
+	font-weight: 700;
+	border: 0;
+}
+body.woocommerce-page .woocommerce .woocommerce-password-strength.strong { background: #f2fbe9; color: #3f6212; }
+body.woocommerce-page .woocommerce .woocommerce-password-strength.good   { background: #eff6ff; color: #1d4ed8; }
+body.woocommerce-page .woocommerce .woocommerce-password-strength.short,
+body.woocommerce-page .woocommerce .woocommerce-password-strength.bad    { background: #fef2f2; color: #b91c1c; }
+
+/* -------------------------------------------------------------------------
+ * Buttons — pill shape, Fredoka, hard drop-shadow (the theme CTA style).
+ * ---------------------------------------------------------------------- */
+body.woocommerce-page .woocommerce a.button,
+body.woocommerce-page .woocommerce button.button,
+body.woocommerce-page .woocommerce input.button,
+body.woocommerce-page .woocommerce a.button.alt,
+body.woocommerce-page .woocommerce button.button.alt,
+body.woocommerce-page .woocommerce input.button.alt,
+body.woocommerce-page .woocommerce #place_order,
+body.woocommerce-page .woocommerce .woocommerce-Button.button {
+	display: inline-block;
+	width: auto;
+	margin: 0;
+	padding: 0.85rem 1.9rem;
+	border: 0;
+	border-radius: 9999px !important;
+	background: var(--zp-yellow) !important;
+	color: var(--zp-darkblue) !important;
+	font-family: var(--zp-font-display);
+	font-weight: 700;
+	font-size: 1.05rem;
+	line-height: 1.2;
+	text-align: center;
+	text-decoration: none;
+	text-shadow: none;
+	cursor: pointer;
+	box-shadow: 0 4px 0 0 var(--zp-btn-shadow);
+	transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+}
+
+/* The `#main button { font-family: body }` reset near the top outranks the
+ * skin above for real <button> elements (its ID beats these classes), so
+ * <button class="button"> — e.g. "Save changes" on Account details, "Apply
+ * coupon" — would fall back to Nunito. Re-assert Fredoka with an ID in the
+ * selector too. */
+body.woocommerce-page #main button.button,
+body.woocommerce-page #main button.woocommerce-Button {
+	font-family: var(--zp-font-display);
+}
+
+body.woocommerce-page .woocommerce a.button:hover,
+body.woocommerce-page .woocommerce button.button:hover,
+body.woocommerce-page .woocommerce input.button:hover,
+body.woocommerce-page .woocommerce a.button.alt:hover,
+body.woocommerce-page .woocommerce button.button.alt:hover,
+body.woocommerce-page .woocommerce input.button.alt:hover,
+body.woocommerce-page .woocommerce #place_order:hover,
+body.woocommerce-page .woocommerce .woocommerce-Button.button:hover {
+	background: var(--zp-orange) !important;
+	color: var(--zp-darkblue) !important;
+	box-shadow: 0 2px 0 0 var(--zp-btn-shadow);
+	transform: translateY(2px);
+}
+
+body.woocommerce-page .woocommerce a.button:active,
+body.woocommerce-page .woocommerce button.button:active,
+body.woocommerce-page .woocommerce input.button:active,
+body.woocommerce-page .woocommerce #place_order:active,
+body.woocommerce-page .woocommerce button.button.alt:active {
+	box-shadow: none;
+	transform: translateY(4px);
+}
+
+body.woocommerce-page .woocommerce a.button:disabled,
+body.woocommerce-page .woocommerce button.button:disabled,
+body.woocommerce-page .woocommerce button.button:disabled[disabled],
+body.woocommerce-page .woocommerce input.button:disabled {
+	opacity: 0.55;
+	box-shadow: 0 4px 0 0 var(--zp-btn-shadow);
+	transform: none;
+	cursor: not-allowed;
+}
+
+/* Secondary / "go back" actions — outline instead of the yellow CTA */
+body.woocommerce-page .woocommerce a.button.wc-backward,
+body.woocommerce-page .woocommerce button.button[name="update_cart"],
+body.woocommerce-page .woocommerce a.button.wc-forward:not(.checkout-button):not(.alt) {
+	background: #fff !important;
+	color: var(--zp-darkblue) !important;
+	box-shadow: inset 0 0 0 2px var(--zp-darkblue);
+}
+body.woocommerce-page .woocommerce a.button.wc-backward:hover,
+body.woocommerce-page .woocommerce button.button[name="update_cart"]:hover {
+	background: var(--zp-darkblue) !important;
+	color: #fff !important;
+	box-shadow: inset 0 0 0 2px var(--zp-darkblue);
+	transform: none;
+}
+
+/* Destructive actions — use the red theme instead of the yellow CTA:
+ *   a.button.cancel            cancel a subscription (WooCommerce Subscriptions)
+ *   a.button.delete            delete a saved payment method (WooCommerce core)
+ *   a.button.wcs_deletion_error  delete a payment method still tied to a
+ *                              subscription (WooCommerce Subscriptions)
+ * Class + class beats the base `.woocommerce a.button` rule. */
+body.woocommerce-page .woocommerce a.button.cancel,
+body.woocommerce-page .woocommerce a.button.delete,
+body.woocommerce-page .woocommerce a.button.wcs_deletion_error,
+body.woocommerce-page .woocommerce button.button.cancel,
+body.woocommerce-page .woocommerce input.button.cancel {
+	background: var(--zp-red) !important;
+	color: #fff !important;
+	box-shadow: 0 4px 0 0 #a80f14;
+}
+body.woocommerce-page .woocommerce a.button.cancel:hover,
+body.woocommerce-page .woocommerce a.button.delete:hover,
+body.woocommerce-page .woocommerce a.button.wcs_deletion_error:hover,
+body.woocommerce-page .woocommerce button.button.cancel:hover,
+body.woocommerce-page .woocommerce input.button.cancel:hover {
+	background: #c81a20 !important;
+	color: #fff !important;
+	box-shadow: 0 2px 0 0 #a80f14;
+	transform: translateY(2px);
+}
+body.woocommerce-page .woocommerce a.button.cancel:active,
+body.woocommerce-page .woocommerce a.button.delete:active,
+body.woocommerce-page .woocommerce a.button.wcs_deletion_error:active,
+body.woocommerce-page .woocommerce button.button.cancel:active {
+	box-shadow: none;
+	transform: translateY(4px);
+}
+
+/* Full-width primary actions where WooCommerce shows them stacked */
+body.woocommerce-page .woocommerce #place_order,
+body.woocommerce-page .woocommerce .wc-proceed-to-checkout a.checkout-button,
+body.woocommerce-page .woocommerce-account form.login button.button,
+body.woocommerce-page .woocommerce form.register button.button {
+	width: 100%;
+}
+
+/* Account details — lift the "Save changes" button off the password fields. */
+body.woocommerce-page .woocommerce-EditAccountForm button.button[name="save_account_details"] {
+	margin-top: 1rem;
+}
+
+/* -------------------------------------------------------------------------
+ * Cards — My Account content, order review, boxed forms.
+ * ---------------------------------------------------------------------- */
+body.woocommerce-page .woocommerce-MyAccount-content,
+body.woocommerce-page .woocommerce form.login,
+body.woocommerce-page .woocommerce form.register,
+body.woocommerce-page .woocommerce form.checkout_coupon,
+body.woocommerce-page .woocommerce form.lost_reset_password,
+body.woocommerce-checkout #order_review,
+body.woocommerce-page .woocommerce ul.order_details {
+	background: var(--zp-card);
+	border: 1px solid var(--zp-border);
+	border-radius: var(--zp-radius);
+	box-shadow: var(--zp-shadow-card);
+}
+
+body.woocommerce-page .woocommerce-MyAccount-content { padding: 1.75rem; }
+body.woocommerce-page .woocommerce form.login,
+body.woocommerce-page .woocommerce form.register,
+body.woocommerce-page .woocommerce form.checkout_coupon,
+body.woocommerce-page .woocommerce form.lost_reset_password { padding: 1.5rem; }
+body.woocommerce-checkout #order_review { padding: 1.5rem; }
+
+/* -------------------------------------------------------------------------
+ * My Account — sidebar navigation + content layout.
+ * ---------------------------------------------------------------------- */
+body.woocommerce-page .woocommerce-MyAccount-navigation ul {
+	margin: 0 0 2rem;
+	padding: 0.5rem;
+	list-style: none;
+	background: var(--zp-card);
+	border: 1px solid var(--zp-border);
+	border-radius: var(--zp-radius);
+	box-shadow: var(--zp-shadow-card);
+}
+body.woocommerce-page .woocommerce-MyAccount-navigation li { margin: 0; border: 0; }
+body.woocommerce-page .woocommerce-MyAccount-navigation li a {
+	display: block;
+	padding: 0.7rem 1rem;
+	border-radius: 0.6rem;
+	font-family: var(--zp-font-display);
+	font-weight: 600;
+	color: var(--zp-darkblue);
+	text-decoration: none;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+body.woocommerce-page .woocommerce-MyAccount-navigation li a:hover {
+	background: rgba(0, 130, 200, 0.1);
+	color: var(--zp-blue);
+	text-decoration: none;
+}
+body.woocommerce-page .woocommerce-MyAccount-navigation li.is-active a {
+	background: rgba(225, 33, 40, 0.1);
+	color: var(--zp-red);
+}
+
+@media (min-width: 783px) {
+	body.woocommerce-account .woocommerce {
+		display: flex;
+		align-items: flex-start;
+		gap: 2rem;
+	}
+	body.woocommerce-account .woocommerce-MyAccount-navigation {
+		float: none;
+		width: 16rem;
+		flex: 0 0 16rem;
+		margin: 0;
+	}
+	body.woocommerce-account .woocommerce-MyAccount-navigation ul { margin-bottom: 0; }
+	body.woocommerce-account .woocommerce-MyAccount-content {
+		float: none;
+		width: auto;
+		flex: 1 1 auto;
+		min-width: 0;
+		margin: 0;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * Tables — order review, order history, totals.
+ * ---------------------------------------------------------------------- */
+body.woocommerce-page .woocommerce table.shop_table {
+	margin: 0 0 1.5rem;
+	border: 1px solid var(--zp-border);
+	border-radius: var(--zp-radius);
+	border-collapse: separate;
+	border-spacing: 0;
+	overflow: hidden;
+	background: var(--zp-card);
+}
+body.woocommerce-page .woocommerce table.shop_table th,
+body.woocommerce-page .woocommerce table.shop_table td {
+	padding: 0.9rem 1rem;
+	border-top: 1px solid var(--zp-border);
+	text-align: left;
+}
+body.woocommerce-page .woocommerce table.shop_table thead th,
+body.woocommerce-page .woocommerce table.shop_table tfoot th {
+	background: var(--zp-bg);
+	border-top: 0;
+	font-family: var(--zp-font-display);
+	font-weight: 600;
+	color: var(--zp-darkblue);
+}
+body.woocommerce-page .woocommerce table.shop_table tbody tr:first-child th,
+body.woocommerce-page .woocommerce table.shop_table tbody tr:first-child td { border-top: 0; }
+body.woocommerce-page .woocommerce table.shop_table tfoot tr:last-child th,
+body.woocommerce-page .woocommerce table.shop_table tfoot tr:last-child td {
+	font-size: 1.05rem;
+	color: var(--zp-darkblue);
+}
+
+/* order review sits inside its own card already — drop the nested frame */
+body.woocommerce-checkout #order_review table.shop_table {
+	border: 0;
+	border-radius: 0;
+	margin: 0;
+}
+
+@media (min-width: 769px) {
+	body.woocommerce-checkout #order_review { position: sticky; top: 7rem; }
+}
+
+/* -------------------------------------------------------------------------
+ * Checkout — gutter between the customer details and order review columns.
+ * ---------------------------------------------------------------------- */
+@media (min-width: 769px) {
+	body.woocommerce-checkout .woocommerce form.checkout > #customer_details { width: 53%; }
+	body.woocommerce-checkout .woocommerce form.checkout > #order_review,
+	body.woocommerce-checkout .woocommerce form.checkout > #order_review_heading { width: 43%; }
+}
+
+body.woocommerce-checkout #payment {
+	background: var(--zp-bg);
+	border: 1px solid var(--zp-border);
+	border-radius: var(--zp-radius);
+}
+body.woocommerce-checkout #payment ul.payment_methods { border-bottom: 1px solid var(--zp-border); }
+body.woocommerce-checkout #payment div.payment_box {
+	background: #fff;
+	border-radius: var(--zp-radius-sm);
+}
+body.woocommerce-checkout #payment div.payment_box::before { border-bottom-color: #fff; }
+
+/* order-received / thank-you summary strip */
+body.woocommerce-page .woocommerce ul.order_details {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.25rem 2rem;
+	margin: 0 0 2rem;
+	padding: 1.25rem 1.5rem;
+	list-style: none;
+}
+body.woocommerce-page .woocommerce ul.order_details li {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	text-transform: none;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--zp-muted);
+}
+body.woocommerce-page .woocommerce ul.order_details li strong {
+	display: block;
+	margin-top: 0.15rem;
+	font-family: var(--zp-font-display);
+	font-size: 1rem;
+	color: var(--zp-darkblue);
+}
+
+/* -------------------------------------------------------------------------
+ * Notices — success / info / error, colour-coded with a left accent bar.
+ * ---------------------------------------------------------------------- */
+body.woocommerce-page .woocommerce .woocommerce-message,
+body.woocommerce-page .woocommerce .woocommerce-info,
+body.woocommerce-page .woocommerce .woocommerce-error,
+body.woocommerce-page .woocommerce-notices-wrapper .woocommerce-message,
+body.woocommerce-page .woocommerce-notices-wrapper .woocommerce-info,
+body.woocommerce-page .woocommerce-notices-wrapper .woocommerce-error {
+	margin: 0 0 1.5rem;
+	padding: 1rem 1.25rem;
+	border: 1px solid var(--zp-border);
+	border-left: 5px solid var(--zp-blue);
+	border-radius: var(--zp-radius-sm);
+	background: #eff6ff;
+	color: var(--zp-ink);
+	font-weight: 600;
+	list-style: none;
+}
+body.woocommerce-page .woocommerce .woocommerce-message,
+body.woocommerce-page .woocommerce-notices-wrapper .woocommerce-message {
+	border-left-color: var(--zp-green);
+	background: #f2fbe9;
+}
+body.woocommerce-page .woocommerce .woocommerce-error,
+body.woocommerce-page .woocommerce-notices-wrapper .woocommerce-error {
+	border-left-color: var(--zp-red);
+	background: #fef2f2;
+}
+body.woocommerce-page .woocommerce .woocommerce-message::before,
+body.woocommerce-page .woocommerce .woocommerce-info::before,
+body.woocommerce-page .woocommerce .woocommerce-error::before {
+	display: none;
+}
+body.woocommerce-page .woocommerce .woocommerce-message .button,
+body.woocommerce-page .woocommerce .woocommerce-info .button {
+	padding: 0.4rem 1.1rem;
+	font-size: 0.9rem;
+}
+
+body.woocommerce-page .woocommerce-form-login-toggle .woocommerce-info,
+body.woocommerce-page .woocommerce-form-coupon-toggle .woocommerce-info {
+	background: #eff6ff;
+	border-left-color: var(--zp-blue);
+}
+
+/* -------------------------------------------------------------------------
+ * Cart (bypassed on this site, but styled for completeness).
+ * ---------------------------------------------------------------------- */
+body.woocommerce-cart .woocommerce .cart-collaterals .cart_totals {
+	background: var(--zp-card);
+	border: 1px solid var(--zp-border);
+	border-radius: var(--zp-radius);
+	padding: 1.5rem;
+	box-shadow: var(--zp-shadow-card);
+}
+body.woocommerce-cart .woocommerce .cart-collaterals .cart_totals > h2 { margin-top: 0; }
+
+/* -------------------------------------------------------------------------
+ * Small screens.
+ * ---------------------------------------------------------------------- */
+@media (max-width: 600px) {
+	body.woocommerce-page #main { padding-left: 0.9rem; padding-right: 0.9rem; }
+	body.woocommerce-page .woocommerce-MyAccount-content { padding: 1.25rem; }
+	body.woocommerce-page .woocommerce a.button,
+	body.woocommerce-page .woocommerce button.button,
+	body.woocommerce-page .woocommerce input.button { width: 100%; }
+}
