@@ -17,6 +17,9 @@
  *      screens) ONLY on is_checkout() / is_cart() / is_account_page(),
  *      loaded after `zoneplay-style` and WooCommerce's own stylesheets so it
  *      wins the cascade.
+ *   3. Dequeues WooCommerce's (and WooCommerce Subscriptions') global
+ *      front-end CSS/JS on every non-WooCommerce page — see
+ *      zp_wc_dequeue_frontend_assets().
  *
  * Front-end CSS only — no template overrides, no checkout field changes.
  *
@@ -25,6 +28,25 @@
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
+}
+
+/**
+ * True on pages that legitimately need WooCommerce's front-end assets:
+ * Shop / product / product-taxonomy archives, Cart, Checkout, My Account and
+ * the account/checkout endpoints (order-received, view-order, …).
+ *
+ * @return bool
+ */
+function zp_is_woocommerce_page() {
+	if ( ! function_exists( 'is_woocommerce' ) ) {
+		return false;
+	}
+
+	return is_woocommerce()
+		|| is_cart()
+		|| is_checkout()
+		|| is_account_page()
+		|| is_wc_endpoint_url();
 }
 
 add_action(
@@ -71,4 +93,60 @@ function zp_wc_enqueue_skin() {
 	if ( is_checkout() || is_cart() || is_account_page() ) {
 		wp_enqueue_style( 'zoneplay-woocommerce' );
 	}
+}
+
+/**
+ * Strip WooCommerce's global front-end assets from non-WooCommerce pages.
+ *
+ * WooCommerce (and WooCommerce Subscriptions / All Products for Subscriptions)
+ * enqueue their layout/general CSS, blockUI, js-cookie, the main woocommerce
+ * bundle, country-select / address-i18n, order-attribution + sourcebuster and
+ * the wcsatt bundle on *every* front-end page — none of which the content
+ * pages here use. Only the Shop / Cart / Checkout / My Account screens keep
+ * them (see zp_is_woocommerce_page()).
+ *
+ * Runs at priority 99 so it sees everything WooCommerce enqueued at the
+ * default priority 10. Any handle starting with one of the WooCommerce
+ * prefixes is dropped; the theme's own `zoneplay-woocommerce` skin is
+ * explicitly spared (it is never enqueued on these pages anyway).
+ */
+add_action( 'wp_enqueue_scripts', 'zp_wc_dequeue_frontend_assets', 99 );
+
+function zp_wc_dequeue_frontend_assets() {
+	if ( is_admin() || zp_is_woocommerce_page() ) {
+		return;
+	}
+
+	$prefixes = array( 'woocommerce', 'wc-', 'wcsatt', 'sourcebuster', 'selectWoo', 'select2', 'flexslider', 'photoswipe', 'zoom' );
+
+	$is_wc_handle = static function ( $handle ) use ( $prefixes ) {
+		if ( 'zoneplay-woocommerce' === $handle ) {
+			return false;
+		}
+		foreach ( $prefixes as $prefix ) {
+			if ( 0 === strpos( $handle, $prefix ) ) {
+				return true;
+			}
+		}
+		return false;
+	};
+
+	foreach ( (array) wp_styles()->queue as $handle ) {
+		if ( $is_wc_handle( $handle ) ) {
+			wp_dequeue_style( $handle );
+		}
+	}
+
+	foreach ( (array) wp_scripts()->queue as $handle ) {
+		if ( $is_wc_handle( $handle ) ) {
+			wp_dequeue_script( $handle );
+		}
+	}
+
+	// Drops the `woocommerce-no-js` <body> class and the tiny <script> that
+	// swaps it, both added by WooCommerce's wc_body_class() filter.
+	remove_filter( 'body_class', 'wc_body_class' );
+
+	// The <noscript> product-gallery style is only meaningful on product pages.
+	remove_action( 'wp_head', 'wc_gallery_noscript' );
 }
