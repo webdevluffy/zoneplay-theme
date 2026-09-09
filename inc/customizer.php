@@ -211,9 +211,8 @@ add_action(
 		$wp_customize->add_section(
 			'zp_analytics',
 			array(
-				'title'       => __( 'Google Tag Manager', 'zoneplay' ),
-				'description' => __( 'The container loads on the live site only — never on local, WP_DEBUG or *.local hosts. Leave empty to disable GTM. Ignored if a ZP_GTM_ID constant is set in wp-config.php.', 'zoneplay' ),
-				'priority'    => 165,
+				'title'    => __( 'Google Tag Manager', 'zoneplay' ),
+				'priority' => 165,
 			)
 		);
 
