@@ -3,13 +3,28 @@
  * Google Tag Manager gate.
  *
  * The GTM markup itself lives in header.php (in <head> and right after the
- * opening <body>); this file only decides whether it should be printed.
+ * opening <body>); this file only decides whether it should be printed and
+ * with which container ID.
  *
- * GTM is emitted on live sites only. It is suppressed while developing so
- * local traffic never reaches the container. "Local" is detected from, in
- * order: an explicit WP environment type, WP_DEBUG, then the request host.
+ * Container ID resolution (first hit wins):
+ *   1. the ZP_GTM_ID constant, if defined in wp-config.php
+ *   2. the Customizer setting (Appearance → Customize → Google Tag Manager)
+ *   3. the packaged default, GTM-5Q5RGBPL
+ * An empty result disables GTM everywhere.
  *
- * Force it on locally (e.g. to test the container) with:
+ * GTM is emitted on live sites only and suppressed while developing so local
+ * traffic never reaches the container. A request is treated as "developing"
+ * when ANY of these is true:
+ *   - the WP environment type is 'local' or 'development'
+ *   - WP_DEBUG is on
+ *   - WP_LOCAL_DEV is defined and truthy
+ *   - the host is localhost / 127.0.0.1 / ::1, or ends in .local / .test /
+ *     .localhost / .dev / .mamp
+ *
+ * Note: an unset WP_ENVIRONMENT_TYPE reports as 'production', so 'production'
+ * is NOT treated as a positive signal on its own — one of the checks above
+ * must fail to clear for GTM to load. On a real staging box with WP_DEBUG
+ * left on, use ZP_GTM_FORCE to load it anyway:
  *   define( 'ZP_GTM_FORCE', true );  // wp-config.php
  *
  * @package ZonePlay
@@ -19,9 +34,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Container ID. Empty string disables GTM everywhere.
-if ( ! defined( 'ZP_GTM_ID' ) ) {
-	define( 'ZP_GTM_ID', 'GTM-5Q5RGBPL' );
+/** Packaged default container ID, used until one is set in the Customizer. */
+if ( ! defined( 'ZP_GTM_ID_DEFAULT' ) ) {
+	define( 'ZP_GTM_ID_DEFAULT', 'GTM-5Q5RGBPL' );
+}
+
+/**
+ * The GTM container ID for this site.
+ *
+ * @return string e.g. "GTM-XXXXXXX", or '' when GTM is disabled.
+ */
+function zp_gtm_id() {
+	if ( defined( 'ZP_GTM_ID' ) ) {
+		return trim( (string) ZP_GTM_ID );
+	}
+	return trim( (string) get_theme_mod( 'zp_gtm_id', ZP_GTM_ID_DEFAULT ) );
 }
 
 /**
@@ -30,47 +57,65 @@ if ( ! defined( 'ZP_GTM_ID' ) ) {
  * @return bool
  */
 function zp_load_gtm() {
-	if ( '' === (string) ZP_GTM_ID ) {
+	if ( '' === zp_gtm_id() ) {
 		return false;
 	}
 
-	if ( defined( 'ZP_GTM_FORCE' ) && ZP_GTM_FORCE ) {
-		return true;
+	// Explicit override — wins over every check below.
+	if ( defined( 'ZP_GTM_FORCE' ) ) {
+		return (bool) ZP_GTM_FORCE;
 	}
 
-	// Never track wp-admin, AJAX, REST, CLI or logged-in editors' previews.
+	// Never track wp-admin, AJAX, cron, REST or CLI.
 	if ( is_admin() || wp_doing_ajax() || wp_doing_cron() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
 		return false;
 	}
 
-	// Explicit environment wins.
-	if ( function_exists( 'wp_get_environment_type' ) ) {
-		$env = wp_get_environment_type();
-		if ( in_array( $env, array( 'local', 'development' ), true ) ) {
-			return false;
-		}
-		if ( in_array( $env, array( 'staging', 'production' ), true ) ) {
-			return true;
-		}
+	// Explicit "this is a dev environment" markers.
+	if ( function_exists( 'wp_get_environment_type' ) && in_array( wp_get_environment_type(), array( 'local', 'development' ), true ) ) {
+		return false;
 	}
-
-	// Fallbacks for when the environment type is unset (defaults to
-	// "production" even on a dev box).
 	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 		return false;
 	}
+	if ( defined( 'WP_LOCAL_DEV' ) && WP_LOCAL_DEV ) {
+		return false;
+	}
 
+	// Host-based fallback for a dev box that sets none of the above.
 	$host = isset( $_SERVER['HTTP_HOST'] ) ? strtolower( (string) wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
 	$host = preg_replace( '/:\d+$/', '', $host ); // strip port
 
 	if ( '' === $host || 'localhost' === $host || '127.0.0.1' === $host || '::1' === $host ) {
 		return false;
 	}
-	foreach ( array( '.local', '.test', '.localhost', '.dev', '.mamp' ) as $tld ) {
-		if ( substr( $host, -strlen( $tld ) ) === $tld ) {
+	foreach ( array( '.local', '.test', '.localhost', '.dev', '.mamp' ) as $suffix ) {
+		if ( substr( $host, -strlen( $suffix ) ) === $suffix ) {
 			return false;
 		}
 	}
 
 	return true;
+}
+
+/**
+ * Sanitize a GTM container ID from the Customizer.
+ *
+ * Accepts "GTM-XXXXXXX" or a bare "XXXXXXX" (the GTM- prefix is added),
+ * upper-cases it, and drops anything that isn't a valid container ID.
+ *
+ * @param string $value Raw setting value.
+ * @return string
+ */
+function zp_sanitize_gtm_id( $value ) {
+	$value = strtoupper( preg_replace( '/[^A-Za-z0-9\-]/', '', (string) $value ) );
+
+	if ( '' === $value ) {
+		return '';
+	}
+	if ( 0 !== strpos( $value, 'GTM-' ) ) {
+		$value = 'GTM-' . ltrim( $value, '-' );
+	}
+
+	return preg_match( '/^GTM-[A-Z0-9]{4,}$/', $value ) ? $value : '';
 }
