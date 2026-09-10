@@ -420,6 +420,14 @@ body.woocommerce-page .woocommerce-EditAccountForm button.button[name="save_acco
 	margin-top: 1rem;
 }
 
+/* "Upgrade or Downgrade" subscription switch link — space it off the line
+ * item it sits under (WooCommerce Subscriptions, My Account > subscription). */
+body.woocommerce-page .woocommerce a.button.wcs-switch-link {
+	display: inline-block;
+	margin-top: 1rem;
+	margin-bottom: 0.5rem;
+}
+
 /* -------------------------------------------------------------------------
  * Cards — My Account content, order review, boxed forms.
  * ---------------------------------------------------------------------- */
