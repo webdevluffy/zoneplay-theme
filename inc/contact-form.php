@@ -45,9 +45,37 @@ function zp_cf_enquiry_options() {
 /**
  * Where enquiries are delivered. Filterable; defaults to the site admin
  * email (which on this install is the same address the Astro form used).
+ *
+ * @param string $override A per-shortcode-instance recipient (the
+ *                          `recipient` attribute), already validated with
+ *                          is_email() by the caller. Empty string to use
+ *                          the default.
  */
-function zp_cf_recipient() {
-	return apply_filters( 'zoneplay_contact_form_recipient', get_option( 'admin_email' ) );
+function zp_cf_recipient( $override = '' ) {
+	$default = ( '' !== $override && is_email( $override ) ) ? $override : get_option( 'admin_email' );
+
+	return apply_filters( 'zoneplay_contact_form_recipient', $default, $override );
+}
+
+/**
+ * The nonce action for a given recipient, so the nonce itself vouches for
+ * the recipient it was issued for.
+ *
+ * The `recipient` field rides in the form's POST body like any other field,
+ * so it's visible in devtools and editable client-side same as the hidden
+ * honeypot field. What stops that edit from being honoured is this: the
+ * nonce isn't valid for "the contact form", it's only valid for "the contact
+ * form, sent to *this* address" — WordPress derives it from wp_hash() using
+ * secret keys (NONCE_KEY/NONCE_SALT) the browser never sees. Changing the
+ * `recipient` field changes the action string the server recomputes on
+ * submit, which no longer matches the nonce that was issued for the
+ * original address, so verification fails and the tampered value is never
+ * trusted — see zp_cf_handle_submit().
+ *
+ * @param string $recipient Resolved recipient email.
+ */
+function zp_cf_nonce_action( $recipient ) {
+	return ZP_CF_NONCE . '|' . $recipient;
 }
 
 /* -------------------------------------------------------------------------
@@ -104,16 +132,23 @@ add_shortcode( ZP_CF_SHORTCODE, 'zp_cf_render' );
  * @param array|string $atts
  *   button_text  Submit button label. Default "Send Message".
  *   success_text Confirmation paragraph after a successful send.
+ *   recipient    Override where this instance's enquiries are delivered.
+ *                Must be a valid email address; anything else is ignored
+ *                and the default (admin email / the
+ *                `zoneplay_contact_form_recipient` filter) is used instead.
  */
 function zp_cf_render( $atts ) {
 	$atts = shortcode_atts(
 		array(
 			'button_text'  => __( 'Send Message', 'zoneplay' ),
 			'success_text' => __( "Thanks for getting in touch — we'll be back to you as soon as we can.", 'zoneplay' ),
+			'recipient'    => '',
 		),
 		$atts,
 		ZP_CF_SHORTCODE
 	);
+
+	$recipient = zp_cf_recipient( trim( (string) $atts['recipient'] ) );
 
 	wp_enqueue_style( ZP_CF_HANDLE );
 	wp_enqueue_script( ZP_CF_HANDLE );
@@ -135,7 +170,8 @@ function zp_cf_render( $atts ) {
 		</div>
 
 		<form class="zpcf__form" id="zpcf-form">
-			<?php wp_nonce_field( ZP_CF_NONCE, 'zpcf_nonce' ); ?>
+			<?php wp_nonce_field( zp_cf_nonce_action( $recipient ), 'zpcf_nonce' ); ?>
+			<input type="hidden" name="recipient" value="<?php echo esc_attr( $recipient ); ?>">
 
 			<div class="zpcf__hp" aria-hidden="true">
 				<label><?php esc_html_e( 'Leave this field empty', 'zoneplay' ); ?>
@@ -195,9 +231,25 @@ add_action( 'wp_ajax_' . ZP_CF_ACTION, 'zp_cf_handle_submit' );
 add_action( 'wp_ajax_nopriv_' . ZP_CF_ACTION, 'zp_cf_handle_submit' );
 
 function zp_cf_handle_submit() {
-	// The nonce field (name="zpcf_nonce") rides along in the form's FormData.
-	if ( ! check_ajax_referer( ZP_CF_NONCE, 'zpcf_nonce', false ) ) {
+	// The `recipient` field is plain POST data — visible and editable in
+	// devtools just like any other field. It's only trustworthy once the
+	// nonce below is verified against the *same* value, since the nonce was
+	// issued for one specific recipient (see zp_cf_nonce_action()); a
+	// tampered recipient recomputes to a different action and fails
+	// verification here, so the submission is rejected before it can be
+	// used to redirect mail anywhere else.
+	$recipient = sanitize_email( wp_unslash( $_POST['recipient'] ?? '' ) );
+	$nonce     = isset( $_POST['zpcf_nonce'] ) ? wp_unslash( $_POST['zpcf_nonce'] ) : '';
+
+	if ( ! wp_verify_nonce( $nonce, zp_cf_nonce_action( $recipient ) ) ) {
 		wp_send_json( array( 'ok' => false, 'error' => __( 'Your session expired. Please refresh the page and try again.', 'zoneplay' ) ) );
+	}
+
+	// Belt-and-braces: the nonce check above already proves $recipient is
+	// exactly what this form instance was rendered with, but never trust a
+	// bare string as an email address without checking it's actually one.
+	if ( ! is_email( $recipient ) ) {
+		$recipient = get_option( 'admin_email' );
 	}
 
 	// Honeypot — a bot filled the hidden field. Pretend success, send nothing.
@@ -225,7 +277,7 @@ function zp_cf_handle_submit() {
 		sprintf( 'Reply-To: %s <%s>', preg_replace( '/[\r\n]+/', ' ', $name ), $email ),
 	);
 
-	$sent = wp_mail( zp_cf_recipient(), $subject, $body, $headers );
+	$sent = wp_mail( $recipient, $subject, $body, $headers );
 
 	if ( $sent ) {
 		wp_send_json( array( 'ok' => true ) );
